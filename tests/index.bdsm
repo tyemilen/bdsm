@@ -1,0 +1,35 @@
+!
+	h
+		t Cool website
+		lk r"stylesheet" h"style.css"
+		sc s"script.js"
+	bb
+		h1 >
+			total @cart.length@
+		d "cart"
+			@for item of cart
+				d "cart-item" @item.name@ - @IND@
+
+		// or like this
+		
+		d "cart"
+			@for item|i of cart
+				d "cart-item unique-class-for-@item.name@" @item.name@ - @i@
+		@if undefined
+			p something real just happened
+		@el
+			p something not real just happened
+			@if cart.length > 2
+				p cart is over 2
+			@el
+				p cart is not over 2
+
+		hdr #header
+			div #header-container
+				a h"/" Cool website
+				a h"/login" t"_blank" Login (doesn't work (busy))
+		mn
+			i p"cool placeholder"
+			b "button button-secondary" BUTTON
+			p welcome to cool website >
+				welcome to cool website
