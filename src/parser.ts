@@ -1,9 +1,5 @@
 import type { TagRegistry, AttributeRegistry } from './registry';
 
-const CLASS_RE = /(?:^|\s)(?:"([^"]+)"|'([^']+)')/;
-const ID_RE = /#([^\s]+)/;
-const ATTR_RE = /([a-zA-Z0-9_:.-]+)(?:"([^"]+)"|'([^']+)')/g;
-
 export class Node {
 	spec: Tag;
 	type: NodeType = 'HTML';
