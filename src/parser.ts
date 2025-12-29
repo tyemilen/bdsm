@@ -1,5 +1,9 @@
 import type { TagRegistry, AttributeRegistry } from './registry';
 
+const CLASS_RE = /(?:^|\s)(?:"([^"]+)"|'([^']+)')/;
+const ID_RE = /#([^\s]+)/;
+const ATTR_RE = /([a-zA-Z0-9_:.-]+)(?:"([^"]+)"|'([^']+)')/g;
+
 export class Node {
 	spec: Tag;
 	type: NodeType = 'HTML';
@@ -20,51 +24,63 @@ export class Node {
 	}
 }
 
+interface ParsedElement {
+	tagName: string;
+	attrs: AttributeMap;
+	text?: string
+};
+
 export class AttributeParser {
 	constructor(private registry: AttributeRegistry) { }
 
-	parse(input: string): { tagName: string; attrs: AttributeMap; text?: string } {
-		const attrs: AttributeMap = {};
-		let rest = input.trim();
+	parse(input: string): ParsedElement {
+		const el: ParsedElement = {
+			tagName: '',
+			attrs: {},
+			text: undefined
+		};
+		const len = input.length;
+		let i = 0;
 
-		const [tagName, ...tail] = rest.split(' ');
-		rest = tail.join(' ');
+		let start = 0;
+		while (i < len && input[i] !== ' ') i++;
+		el.tagName = input.slice(start, i);
 
-		const classMatch = rest.match(/(?:^|\s)(?:"([^"]+)"|'([^']+)')/);
-		if (classMatch && classMatch[1]) {
-			attrs['class'] = classMatch[1];
-			rest = rest.replace(classMatch[0], '');
-		}
+		while (i < len) {
+			while (i < len && input[i] === ' ') i++;
+			if (i >= len) break;
 
-		const idMatch = rest.match(/#([^\s]+)/);
-		if (idMatch && idMatch[1]) {
-			attrs['id'] = idMatch[1];
-			rest = rest.replace(idMatch[0], '');
-		}
+			const c = input[i];
 
-		const attrRegex = /([a-zA-Z0-9_:.-]+)(?:"([^"]+)"|'([^']+)')/g;
-		let m: RegExpExecArray | null;
-		while ((m = attrRegex.exec(rest))) {
-			if (!m[1]) continue;
-			const value = m[2] || m[3] || 'true';
-
-			const hyphenated = m[1].split('-');
-			const isHyperhenated = hyphenated.length > 1;
-
-			let spec = isHyperhenated ? this.registry.get(`${hyphenated[0]}-`) : this.registry.get(m[1]);
-
-			if (isHyperhenated) {
-				const replace = spec.name.endsWith('*');
-				if (replace) attrs[`${spec.name.slice(0, -1)}${hyphenated[1]}`] = value;
-				else attrs[spec.name] = value;
+			if (c === '#') {
+				i++;
+				start = i;
+				while (i < len && input[i] !== ' ') i++;
+				el.attrs.id = input.slice(start, i);
+			} else if (c === '"' || c === "'") {
+				const q = input[i++];
+				start = i;
+				while (i < len && input[i] !== q) i++;
+				el.attrs.class = input.slice(start, i);
+				i++;
 			} else {
-				attrs[spec.name] = value;
+				start = i;
+				while (i < len && input[i] !== ' ' && input[i] !== '"' && input[i] !== "'") i++;
+				const name = input.slice(start, i);
+				if (i < len && (input[i] === '"' || input[i] === "'")) {
+					const q = input[i++];
+					start = i;
+					while (i < len && input[i] !== q) i++;
+					el.attrs[this.registry.get(name).name] = input.slice(start, i) || 'true';
+					i++;
+				} else {
+					el.text = (name + input.slice(i)).trim();
+					break;
+				}
 			}
 		}
 
-		rest = rest.replace(attrRegex, '').trim();
-		const text = rest.length ? rest : undefined;
-		return { tagName: tagName!, attrs, text };
+		return el;
 	}
 }
 

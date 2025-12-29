@@ -48,9 +48,7 @@ export const attributes = new AttributeRegistry({
 	'asc': ATTR('async'),
 	'ch': ATTR('charset'),
 	'cnt': ATTR('content'),
-	'http': ATTR('http-equiv'),
-	'd-': ATTR('data-*'),
-	'a-': ATTR('aria-*')
+	'http': ATTR('http-equiv')
 });
 
 export const tags = new TagRegistry({

@@ -25,7 +25,7 @@
 				p cart is not over 2
 
 		hdr #header
-			div #header-container
+			div data-test"value value" #header-container
 				a h"/" Cool website
 				a h"/login" t"_blank" Login (doesn't work (busy))
 		mn

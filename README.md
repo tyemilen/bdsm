@@ -189,5 +189,3 @@ console.log(template({
 | ch    | charset         |
 | cnt   | content         |
 | http  | http-equiv      |
-| d-    | data-*          |
-| a-    | aria-*          |
